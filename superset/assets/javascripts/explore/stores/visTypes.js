@@ -1047,7 +1047,7 @@ export const visTypes = {
       {
         label: t('Chart Options'),
         controlSetRows: [
-          ['subheader'],
+          ['subheader', 'plan_fact'],
           ['y_axis_format'],
         ],
       },

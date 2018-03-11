@@ -131,7 +131,8 @@ function bigNumberVis(slice, payload) {
 
   const formattedBigNumber = formatValue(bigNumber);
   const formattedData = showTrendline ? data.map(d => ({ x: d[0], y: d[1] })) : null;
-  const formattedSubheader = percentChange === null ? compareSuffix : (
+  const label = showTrendline ? compareSuffix : subheader;
+  const formattedSubheader = percentChange === null ? label : (
     `${formatPercentChange(percentChange)} ${(compareSuffix || '').trim()}`
   );
 
