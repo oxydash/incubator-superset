@@ -27,6 +27,7 @@ const BREAKPOINTS = {
 const addTotalBarValues = function (svg, chart, data, stacked, axisFormat) {
   const format = d3.format(axisFormat || '.3s');
   const countSeriesDisplayed = data.length;
+  let dy;
 
   const totalStackedValues = stacked && data.length !== 0 ?
     data[0].values.map(function (bar, iBar) {
@@ -46,24 +47,30 @@ const addTotalBarValues = function (svg, chart, data, stacked, axisFormat) {
       return i === countSeriesDisplayed - 1;
     }).selectAll('rect');
 
+
   const groupLabels = svg.select('g.nv-barsWrap').append('g');
   rectsToBeLabeled.each(
     function (d, index) {
       const rectObj = d3.select(this);
-      if (rectObj.attr('class').includes('positive')) {
+
+        if (rectObj.attr('class').includes('positive')) {
+          dy = - 5;
+        } else {
+          dy = 14 + parseFloat(rectObj.attr('height'));
+        }
+
         const transformAttr = rectObj.attr('transform');
         const yPos = parseFloat(rectObj.attr('y'));
         const xPos = parseFloat(rectObj.attr('x'));
         const rectWidth = parseFloat(rectObj.attr('width'));
         const t = groupLabels.append('text')
           .attr('x', xPos) // rough position first, fine tune later
-          .attr('y', yPos - 5)
+          .attr('y', yPos + dy)
           .text(format(stacked ? totalStackedValues[index] : d.y))
           .attr('transform', transformAttr)
           .attr('class', 'bar-chart-label');
         const labelWidth = t.node().getBBox().width;
         t.attr('x', xPos + rectWidth / 2 - labelWidth / 2); // fine tune
-      }
     });
 };
 
