@@ -1079,6 +1079,14 @@ export const controls = {
     description: t('Suffix to apply after the percentage display'),
   },
 
+  plan_fact: {
+    type: 'CheckboxControl',
+    label: t('Fact/Plan'),
+    renderTrigger: true,
+    default: false,
+    description: t('The color gradation from the value Fact/Plan'),
+  },
+
   table_timestamp_format: {
     type: 'SelectControl',
     freeForm: true,

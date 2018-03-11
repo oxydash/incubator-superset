@@ -79,7 +79,7 @@ function renderTooltipFactory({ formatDate, formatValue }) {
 function bigNumberVis(slice, payload) {
   const { formData, containerId } = slice;
   const json = payload.data;
-  const { data, subheader, compare_lag: compareLag, compare_suffix: compareSuffix } = json;
+  const { data, subheader, compare_lag: compareLag, compare_suffix: compareSuffix} = json;
   const showTrendline = formData.viz_type === 'big_number';
   const formatValue = d3FormatPreset(formData.y_axis_format);
   const formatPercentChange = d3.format('+.1%');
@@ -98,6 +98,9 @@ function bigNumberVis(slice, payload) {
     bigNumber = data[data.length - 1][1];
   } else {
     bigNumber = data[0][0];
+  }
+
+  if (formData.plan_fact) {
     if (bigNumber > 0 && bigNumber < 3) {
       if (bigNumber < 0.95) {
         brandColor = '#d63f2b';
@@ -106,6 +109,12 @@ function bigNumberVis(slice, payload) {
       } else {
         brandColor = '#54A05C';
       }
+    }
+  } else {
+    if (bigNumber > 0) {
+      brandColor = '#54A05C';
+    } else {
+      brandColor = '#d63f2b';
     }
   }
 
@@ -122,7 +131,7 @@ function bigNumberVis(slice, payload) {
 
   const formattedBigNumber = formatValue(bigNumber);
   const formattedData = showTrendline ? data.map(d => ({ x: d[0], y: d[1] })) : null;
-  const formattedSubheader = percentChange === null ? subheader : (
+  const formattedSubheader = percentChange === null ? compareSuffix : (
     `${formatPercentChange(percentChange)} ${(compareSuffix || '').trim()}`
   );
 

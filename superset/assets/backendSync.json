@@ -1706,6 +1706,13 @@
       "label": "Comparison suffix",
       "description": "Suffix to apply after the percentage display"
     },
+    "plan_fact": {
+      "type": "CheckboxControl",
+      "label": "Fact/Plan",
+      "renderTrigger": true,
+      "default": false,
+      "description": "The color gradation from the value Fact/Plan"
+    },
     "table_timestamp_format": {
       "type": "SelectControl",
       "freeForm": true,

@@ -1023,7 +1023,7 @@ export const visTypes = {
         label: t('Chart Options'),
         controlSetRows: [
           ['compare_lag', 'compare_suffix'],
-          ['y_axis_format', null],
+          ['y_axis_format', 'plan_fact'],
         ],
       },
     ],
