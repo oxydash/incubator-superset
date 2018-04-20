@@ -266,6 +266,9 @@ export const controls = {
     label: t('Linear Color Scheme'),
     choices: [
       ['fire', 'fire'],
+      ['red_yellow_green','#d97e78/#fff4c7/#79b599'],
+      ['green_yellow_red','#79b599/#fff4c7/#d97e78'],
+      ['Summertime','#0c457d/#0ea7b5/#6bd2db/#ffbe4f/#e8702a'],
       ['blue_white_yellow', 'blue/white/yellow'],
       ['white_black', 'white/black'],
       ['black_white', 'black/white'],

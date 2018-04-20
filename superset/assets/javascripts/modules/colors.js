@@ -76,6 +76,23 @@ export const ALL_COLOR_SCHEMES = {
 };
 
 export const spectrums = {
+  red_yellow_green:[
+    "#d97e78",
+    "#fff4c7",
+    "#79b599",
+  ],
+  green_yellow_red:[
+    "#79b599",
+    "#fff4c7",
+    "#d97e78",
+  ],
+  Summertime:[
+    "#0c457d",
+    "#0ea7b5",
+    "#6bd2db",
+    "#ffbe4f",
+    "#e8702a",
+  ],
   blue_white_yellow: [
     '#00d1c1',
     'white',
@@ -108,6 +125,9 @@ export const spectrums = {
     '#666666',
   ],
 };
+
+
+
 
 /**
  * Get a color from a scheme specific palette (scheme)
