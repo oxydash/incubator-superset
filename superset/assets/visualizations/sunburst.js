@@ -17,11 +17,13 @@ function sunburstVis(slice, payload) {
   const visWidth = containerWidth - margin.left - margin.right;
   const visHeight = containerHeight - margin.top - margin.bottom - breadcrumbHeight;
   const radius = Math.min(visWidth, visHeight) / 2;
+  const yOffsets = ['-30', '5', '32', '57', '83'];  // 4 levels of text if inner-most level, 4 otherwise
 
   let colorByCategory = true; // color by category if primary/secondary metrics match
   let maxBreadcrumbs;
   let breadcrumbDims; // set based on data
   let totalSize; // total size of all segments; set after loading the data.
+  let totalSize2;
   let colorScale;
   let breadcrumbs;
   let vis;
@@ -160,8 +162,6 @@ function sunburstVis(slice, payload) {
     const absolutePercString = formatPerc(absolutePercentage);
     const conditionalPercString = parentOfD ? formatPerc(conditionalPercentage) : '';
 
-    // 3 levels of text if inner-most level, 4 otherwise
-    const yOffsets = ['-25', '7', '35', '60'];
     let offsetIndex = 0;
 
     // If metrics match, assume we are coloring by category
@@ -172,30 +172,35 @@ function sunburstVis(slice, payload) {
     gMiddleText.append('text')
       .attr('class', 'path-abs-percent')
       .attr('y', yOffsets[offsetIndex++])
-      .text(absolutePercString + ' of total');
+      .text(absolutePercString);
 
     if (conditionalPercString) {
       gMiddleText.append('text')
         .attr('class', 'path-cond-percent')
         .attr('y', yOffsets[offsetIndex++])
-        .text(conditionalPercString + ' of parent');
+        .text(d.name + ' в ' + d.parent.name + ': ' + conditionalPercString);
     }
 
     gMiddleText.append('text')
       .attr('class', 'path-metrics')
       .attr('y', yOffsets[offsetIndex++])
-      .text('m1: ' + formatNum(d.m1) + (metricsMatch ? '' : ', m2: ' + formatNum(d.m2)));
+      .text(metricsMatch ? '' : 'Доходы: ' + formatNum(d.m2));
+
+      gMiddleText.append('text')
+      .attr('class', 'path-metrics')
+      .attr('y', yOffsets[offsetIndex++])
+      .text('Абоненты: ' + formatNum(d.m1));
 
     gMiddleText.append('text')
-      .attr('class', 'path-ratio')
+      .attr('class', 'path-metrics')
       .attr('y', yOffsets[offsetIndex++])
-      .text((metricsMatch ? '' : ('m2/m1: ' + formatPerc(d.m2 / d.m1))));
+      .text((metricsMatch ? '' : ('ARPaU: ' + formatNum(d.m2 / d.m1))));
 
     // Reset and fade all the segments.
     arcs.selectAll('path')
       .style('stroke-width', null)
       .style('stroke', null)
-      .style('opacity', 0.7);
+      .style('opacity', 0.2);
 
     // Then highlight only those that are an ancestor of the current segment.
     arcs.selectAll('path')
@@ -203,8 +208,7 @@ function sunburstVis(slice, payload) {
         return (sequenceArray.indexOf(node) >= 0);
       })
       .style('opacity', 1)
-      .style('stroke-width', '2px')
-      .style('stroke', '#000');
+
 
     updateBreadcrumbs(sequenceArray, absolutePercString);
   }
@@ -214,7 +218,7 @@ function sunburstVis(slice, payload) {
     // Hide the breadcrumb trail
     breadcrumbs.style('visibility', 'hidden');
 
-    gMiddleText.selectAll('*').remove();
+    drawnoSelection (); // Draw total info
 
     // Deactivate all segments during transition.
     arcs.selectAll('path').on('mouseenter', null);
@@ -231,6 +235,34 @@ function sunburstVis(slice, payload) {
       });
   }
 
+  function drawnoSelection (){
+    let offsetIndex = 0;
+
+    // If metrics match, assume we are coloring by category
+    const metricsMatch = Math.abs(totalSize - totalSize2) < 0.00001;
+
+    gMiddleText.selectAll('*').remove();
+
+    gMiddleText.append('text')
+      .attr('class', 'path-abs-percent')
+      .attr('y', yOffsets[offsetIndex++])
+      .text("100%");
+
+      gMiddleText.append('text')
+      .attr('class', 'path-metrics')
+      .attr('y', yOffsets[offsetIndex++])
+      .text(metricsMatch ? '' : 'Доходы: ' + formatNum(totalSize2));
+
+      gMiddleText.append('text')
+      .attr('class', 'path-metrics')
+      .attr('y', yOffsets[offsetIndex++])
+      .text('Абоненты: ' + formatNum(totalSize));
+
+    gMiddleText.append('text')
+      .attr('class', 'path-metrics')
+      .attr('y', yOffsets[offsetIndex++])
+      .text((metricsMatch ? '' : 'ARPaU: ' + formatNum(totalSize2 / totalSize)));
+  }
 
   function buildHierarchy(rows) {
     const root = {
@@ -347,13 +379,13 @@ function sunburstVis(slice, payload) {
     let ext;
     const fd = slice.formData;
 
-    if (fd.metric !== fd.secondary_metric && fd.secondary_metric) {
-      colorByCategory = false;
-      ext = d3.extent(nodes, d => d.m2 / d.m1);
-      colorScale = d3.scale.linear()
-        .domain([ext[0], ext[0] + ((ext[1] - ext[0]) / 2), ext[1]])
-        .range(['#00D1C1', 'white', '#FFB400']);
-    }
+ //   if (fd.metric !== fd.secondary_metric && fd.secondary_metric) {
+ //     colorByCategory = false;
+ //     ext = d3.extent(nodes, d => d.m2 / d.m1);
+ //     colorScale = d3.scale.linear()
+ //       .domain([ext[0], ext[0] + ((ext[1] - ext[0]) / 2), ext[1]])
+ //       .range(['#00D1C1', 'white', '#FFB400']);
+ //   }
 
     const path = arcs.data([tree]).selectAll('path')
       .data(nodes)
@@ -371,7 +403,9 @@ function sunburstVis(slice, payload) {
       .on('mouseenter', mouseenter);
 
     // Get total size of the tree = value of root node from partition.
-    totalSize = path.node().__data__.value;
+    totalSize = path.node().__data__.m1;
+    totalSize2 = path.node().__data__.m2;
+    drawnoSelection (); // Draw total info
   }
   createBreadcrumbs(payload);
   createVisualization(payload);
