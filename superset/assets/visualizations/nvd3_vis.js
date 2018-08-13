@@ -19,6 +19,8 @@ import { VIZ_TYPES } from './main';
 
 const minBarWidth = 15;
 const animationTime = 1000;
+const translateControlBar = {"grouped":"Группа","stacked":"Стопка"}
+const translateControlStack = {"stacked":"Стопка","stream":"Поток","expanded":"Процент"}
 
 const BREAKPOINTS = {
   small: 340,
@@ -213,6 +215,8 @@ function nvd3Vis(slice, payload) {
         chart.stacked(stacked);
         chart.state.stacked = stacked;
 
+        chart.controlLabels(translateControlBar);
+
         if (fd.show_bar_value) {
           setTimeout(function () {
             addTotalBarValues(svg, chart, data, stacked, fd.y_axis_format);
@@ -241,6 +245,8 @@ function nvd3Vis(slice, payload) {
         stacked = fd.bar_stacked;
         chart.stacked(stacked);
         chart.state.stacked = stacked;
+
+        chart.controlLabels(translateControlBar);
 
         if (fd.order_bars) {
           data.forEach((d) => {
@@ -334,6 +340,7 @@ function nvd3Vis(slice, payload) {
       case 'area':
         chart = nv.models.stackedAreaChart();
         chart.showControls(fd.show_controls);
+        chart.controlLabels(translateControlStack);
         chart.style(fd.stacked_style);
         chart.xScale(d3.time.scale.utc());
         chart.xAxis.staggerLabels(true);
