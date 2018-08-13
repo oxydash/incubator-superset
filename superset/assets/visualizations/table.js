@@ -129,17 +129,16 @@ function tableVis(slice, payload) {
     .on('click', function (d) {
       if (!d.isMetric && fd.table_filter) {
         const td = d3.select(this);
-        if (td.classed('filtered')) {
-          slice.removeFilter(d.col, [d.val]);
-          d3.select(this).classed('filtered', false);
-        } else {
+        if (!(td.classed('filtered'))) {
+          table.selectAll('td').classed('filtered', false);
           d3.select(this).classed('filtered', true);
-          slice.addFilter(d.col, [d.val]);
+          slice.addFilter(d.col, [d.val],false,true);
         }
       }
     })
-    .style('cursor', function (d) {
-      return (!d.isMetric) ? 'pointer' : '';
+    .on('dblclick', function (d) {
+      table.selectAll('td').classed('filtered', false);
+      slice.addFilter(d.col, [],false,true);
     })
     .html(d => d.html ? d.html : d.val);
   const height = slice.height();
