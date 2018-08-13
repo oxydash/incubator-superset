@@ -27,15 +27,17 @@ const BREAKPOINTS = {
 const addTotalBarValues = function (svg, chart, data, stacked, axisFormat) {
   const format = d3.format(axisFormat || '.3s');
   const countSeriesDisplayed = data.length;
-  let dy;
+  const countShowBar  = chart.state.disabled.filter(function(element) {
+    return (!element);
+  });
 
   const totalStackedValues = stacked && data.length !== 0 ?
     data[0].values.map(function (bar, iBar) {
       const bars = data.map(function (series) {
         return series.values[iBar];
       });
-      return d3.sum(bars, function (d) {
-        return d.y;
+      return d3.sum(bars, function (d, idx) {
+        if (chart.state.disabled[idx] === false) return d.y;
       });
     }) : [];
 
@@ -43,36 +45,40 @@ const addTotalBarValues = function (svg, chart, data, stacked, axisFormat) {
     function (d, i) {
       if (!stacked) {
         return true;
+      } else {
+        return i === countShowBar.length - 1;
       }
-      return i === countSeriesDisplayed - 1;
     }).selectAll('rect');
-
 
   const groupLabels = svg.select('g.nv-barsWrap').append('g');
   rectsToBeLabeled.each(
     function (d, index) {
       const rectObj = d3.select(this);
-
-        if (rectObj.attr('class').includes('positive')) {
-          dy = - 5;
-        } else {
-          dy = 14 + parseFloat(rectObj.attr('height'));
-        }
-
+      if (rectObj.attr('class').includes('positive')) {
         const transformAttr = rectObj.attr('transform');
         const yPos = parseFloat(rectObj.attr('y'));
         const xPos = parseFloat(rectObj.attr('x'));
         const rectWidth = parseFloat(rectObj.attr('width'));
         const t = groupLabels.append('text')
           .attr('x', xPos) // rough position first, fine tune later
-          .attr('y', yPos + dy)
+          .attr('y', yPos - 5)
           .text(format(stacked ? totalStackedValues[index] : d.y))
           .attr('transform', transformAttr)
-          .attr('class', 'bar-chart-label');
+          .attr('class', 'bar-chart-label')
+          .style("opacity", 0);
         const labelWidth = t.node().getBBox().width;
-        t.attr('x', xPos + rectWidth / 2 - labelWidth / 2); // fine tune
+        t.transition().duration(300).style("opacity", 1).attr('x', xPos + rectWidth / 2 - labelWidth / 2); // fine tune
+      }
     });
 };
+
+
+const RemoveTotalBarValues = function (svg) {
+  let current = svg.select('g.nv-barsWrap').selectAll('text.bar-chart-label');
+  if (!current.empty()) {
+    current.transition().duration(300).attr("y", 0).style("opacity", 0).remove();
+  }
+}
 
 function hideTooltips() {
   $('.nvtooltip').css({ opacity: 0 });
@@ -205,12 +211,23 @@ function nvd3Vis(slice, payload) {
 
         stacked = fd.bar_stacked;
         chart.stacked(stacked);
+        chart.state.stacked = stacked;
 
         if (fd.show_bar_value) {
           setTimeout(function () {
             addTotalBarValues(svg, chart, data, stacked, fd.y_axis_format);
           }, animationTime);
         }
+
+        chart.dispatch.on('stateChange', function(e) {
+          if (fd.show_bar_value) {
+            RemoveTotalBarValues(svg);
+            setTimeout(function () {
+              addTotalBarValues(svg, chart, data, e.stacked, fd.y_axis_format);
+            }, animationTime);
+          }
+        });
+
         break;
 
       case 'dist_bar':
@@ -223,6 +240,8 @@ function nvd3Vis(slice, payload) {
 
         stacked = fd.bar_stacked;
         chart.stacked(stacked);
+        chart.state.stacked = stacked;
+
         if (fd.order_bars) {
           data.forEach((d) => {
             d.values.sort((a, b) => tryNumify(a.x) < tryNumify(b.x) ? -1 : 1);
@@ -237,6 +256,16 @@ function nvd3Vis(slice, payload) {
           width = barchartWidth();
         }
         chart.width(width);
+
+        chart.dispatch.on('stateChange', function(e) {
+          if (fd.show_bar_value) {
+            RemoveTotalBarValues(svg);
+            setTimeout(function () {
+              addTotalBarValues(svg, chart, data, e.stacked, fd.y_axis_format);
+            }, animationTime);
+          }
+        });
+        
         break;
 
       case 'pie':
