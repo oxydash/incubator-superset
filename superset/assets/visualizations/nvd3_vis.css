@@ -25,7 +25,7 @@ text.nv-axislabel {
 }
 
 .bar {
-  overflow-x: auto !important;
+  overflow: hidden;
 }
 
 .bar svg.nvd3-svg {
