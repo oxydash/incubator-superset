@@ -17,6 +17,8 @@ function chordViz(slice, json) {
   const outerRadius = Math.min(width, height) / 2 - 10;
   const innerRadius = outerRadius - 24;
 
+  const uniqueId = Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36);
+
   let chord;
 
   const arc = d3.svg.arc()
@@ -58,7 +60,7 @@ function chordViz(slice, json) {
 
   // Add the group arc.
   const groupPath = group.append('path')
-  .attr('id', (d, i) => 'group' + i)
+  .attr('id', (d, i) => 'group' + i + uniqueId)
   .attr('d', arc)
   .style('fill', (d, i) => getColorFromScheme(nodes[i], slice.formData.color_scheme));
 
@@ -68,7 +70,7 @@ function chordViz(slice, json) {
   .attr('dy', 15);
 
   groupText.append('textPath')
-  .attr('xlink:href', (d, i) => `#group${i}`)
+  .attr('xlink:href', (d, i) => `#group${i + uniqueId}`)
   .text((d, i) => nodes[i]);
   // Remove the labels that don't fit. :(
   groupText.filter(function (d, i) {
