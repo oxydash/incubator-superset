@@ -22,6 +22,24 @@ const animationTime = 1000;
 const translateControlBar = {"grouped":"Группа","stacked":"Стопка"}
 const translateControlStack = {"stacked":"Стопка","stream":"Поток","expanded":"Процент"}
 
+var RU = d3.locale({
+  "decimal": ".",
+  "thousands": " ",
+  "grouping": [3],
+  "currency": ["₽", ""],
+  "dateTime": "%A, %e %B %Y г.",
+  "date": "%d.%m.%Y",
+  "time": "%H:%M:%S",
+  "periods": ["AM", "PM"],
+  "days": ["воскресенье", "понедельник", "вторник", "среда", "четверг", "пятница", "суббота"],
+  "shortDays": ["вс", "пн", "вт", "ср", "чт", "пт", "сб"],
+  "months": ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"],
+  "shortMonths": ["янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"]
+});
+
+d3.time.format = RU.timeFormat;
+d3.format = RU.numberFormat;
+
 const BREAKPOINTS = {
   small: 340,
 };
