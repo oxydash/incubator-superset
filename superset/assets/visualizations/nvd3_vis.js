@@ -46,7 +46,6 @@ const BREAKPOINTS = {
 
 const addTotalBarValues = function (svg, chart, data, stacked, axisFormat) {
   const format = d3.format(axisFormat || '.3s');
-  const countSeriesDisplayed = data.length;
   const countShowBar  = chart.state.disabled.filter(function(element) {
     return (!element);
   });
