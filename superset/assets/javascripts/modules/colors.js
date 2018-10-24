@@ -124,6 +124,32 @@ export const spectrums = {
     '#FAFAFA',
     '#666666',
   ],
+  white_red: [
+    'white',
+    'red',
+  ],
+  milk_indianred: [
+    '#F2F3F4',
+    '#B03A2E',
+  ],
+  sky_lava: [
+    '#AED6F1',
+    '#CD5C5C',
+  ],
+  flame: [
+    '#F4D03F',
+    '#F39C12',
+    '#922B21',
+  ],
+  red_gradient: [
+    '#FDEDEC',
+    '#FADBD8',
+    '#F5B7B1',
+    '#F1948A',
+    '#EC7063',
+    '#E74C3C',
+    '#CB4335',
+  ],
 };
 
 
