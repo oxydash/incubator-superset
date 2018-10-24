@@ -99,6 +99,34 @@ const RemoveTotalBarValues = function (svg) {
   }
 }
 
+const addDualAxisBarValue = function (svg, axisFormat) {
+  const format = d3.format(axisFormat || '.3s');
+  const countShowBar = 1;
+
+  const rectsToBeLabeled = svg.selectAll('g.nv-group').selectAll('rect');
+
+    const groupLabels = svg.select('g.bars1Wrap').append('g');
+    rectsToBeLabeled.each(
+      function (d, index) {
+        const rectObj = d3.select(this);
+        if (rectObj.attr('class').includes('positive')) {
+          const transformAttr = rectObj.attr('transform');
+          const yPos = parseFloat(rectObj.attr('y'));
+          const xPos = parseFloat(rectObj.attr('x'));
+          const rectWidth = parseFloat(rectObj.attr('width'));
+          const t = groupLabels.append('text')
+            .attr('x', xPos) // rough position first, fine tune later
+            .attr('y', yPos - 5)
+            .text(format(d.y))
+            .attr('transform', transformAttr)
+            .attr('class', 'bar-chart-label')
+            .style("opacity", 0);
+          const labelWidth = t.node().getBBox().width;
+          t.transition().duration(300).style("opacity", 1).attr('x', xPos + rectWidth / 2 - labelWidth / 2); // fine tune
+        }
+      });
+};
+
 function hideTooltips() {
   $('.nvtooltip').css({ opacity: 0 });
 }
@@ -189,19 +217,19 @@ function nvd3Vis(slice, payload) {
     }
     switch (vizType) {
       case 'line':
-        if (fd.show_brush) {
-          chart = nv.models.lineWithFocusChart();
-          chart.focus.xScale(d3.time.scale.utc());
-          chart.x2Axis.staggerLabels(false);
-        } else {
-          chart = nv.models.lineChart();
-        }
-        // To alter the tooltip header
-        // chart.interactiveLayer.tooltip.headerFormatter(function(){return '';});
-        chart.xScale(d3.time.scale.utc());
-        chart.interpolate(fd.line_interpolation);
-        chart.xAxis.staggerLabels(false);
-        break;
+      if (fd.show_brush) {
+        chart = nv.models.lineWithFocusChart();
+        chart.focus.xScale(d3.time.scale.utc());
+        chart.x2Axis.staggerLabels(false);
+      } else {
+        chart = nv.models.lineChart();
+      }
+      // To alter the tooltip header
+      // chart.interactiveLayer.tooltip.headerFormatter(function(){return '';});
+      chart.xScale(d3.time.scale.utc());
+      chart.interpolate(fd.line_interpolation);
+      chart.xAxis.staggerLabels(false);
+      break;
 
       case 'time_pivot':
         chart = nv.models.lineChart();
@@ -211,8 +239,9 @@ function nvd3Vis(slice, payload) {
         break;
 
       case 'dual_line':
-        chart = nv.models.multiChart();
-        chart.interpolate('linear');
+        chart = nv.models.multiChart()
+        .legendRightAxisHint('')
+        .interpolate('monotone');
         break;
 
       case 'bar':
@@ -226,7 +255,7 @@ function nvd3Vis(slice, payload) {
         chart.width(width);
         chart.xAxis
         .showMaxMin(false)
-        .staggerLabels(true);
+        .staggerLabels(false);
 
         stacked = fd.bar_stacked;
         chart.stacked(stacked);
@@ -329,7 +358,7 @@ function nvd3Vis(slice, payload) {
         chart.useInteractiveGuideline(true);
         chart.xAxis
         .showMaxMin(false)
-        .staggerLabels(true);
+        .staggerLabels(false);
         break;
 
       case 'bubble':
@@ -360,14 +389,14 @@ function nvd3Vis(slice, payload) {
         chart.controlLabels(translateControlStack);
         chart.style(fd.stacked_style);
         chart.xScale(d3.time.scale.utc());
-        chart.xAxis.staggerLabels(true);
+        chart.xAxis.staggerLabels(false);
         break;
 
       case 'box_plot':
         colorKey = 'label';
         chart = nv.models.boxPlotChart();
         chart.x(d => d.label);
-        chart.staggerLabels(true);
+        chart.staggerLabels(false);
         chart.maxBoxWidth(75); // prevent boxes from being incredibly wide
         break;
 
@@ -489,7 +518,7 @@ function nvd3Vis(slice, payload) {
         const stretchMargin = calculateStretchMargins(payload);
         chart.margin({ bottom: stretchMargin });
       } else {
-        chart.margin({ bottom: 50 });
+        chart.margin({ bottom: 30 });
       }
     } else {
       chart.margin({ bottom: fd.bottom_margin });
@@ -500,8 +529,33 @@ function nvd3Vis(slice, payload) {
       const yAxisFormatter2 = d3.format(fd.y_axis_2_format);
       chart.yAxis1.tickFormat(yAxisFormatter1);
       chart.yAxis2.tickFormat(yAxisFormatter2);
+
       customizeToolTip(chart, xAxisFormatter, [yAxisFormatter1, yAxisFormatter2]);
-      chart.showLegend(width > BREAKPOINTS.small);
+      
+      //chart.legend.margin({bottom: 50, left: 15});
+      chart.showLegend(false);
+      
+      chart.lines1.padData(true);
+      chart.lines2.padData(true);
+
+      setAxisShowMaxMin(chart.xAxis, false);
+
+      data[0].type = "bar";
+
+      chart.bars1.dispatch.on('renderEnd', function(e){
+        svg.selectAll('.nv-point')
+        .style('stroke-opacity', 1)
+        .style('fill-opacity', 1);
+
+        setTimeout(function () {
+          let current = svg.select('g.bars1Wrap').selectAll('text.bar-chart-label');
+          if (!current.empty()) {
+            current.transition().duration(300).attr("y", 0).style("opacity", 0).remove();
+          }
+          addDualAxisBarValue(svg, fd.y_axis_format);
+        }, 200);
+      });
+
     }
     svg
     .datum(data)
@@ -533,17 +587,20 @@ function nvd3Vis(slice, payload) {
       // - adjust margins based on these measures and render again
       if (isTimeSeries && vizType !== 'bar') {
         const chartMargins = {
-          bottom: maxXAxisLabelHeight + marginPad,
+          bottom: 30, //maxXAxisLabelHeight + marginPad,
           right: maxXAxisLabelHeight + marginPad,
+          top: Math.floor(height/5),
         };
 
         if (vizType === 'dual_line') {
           const maxYAxis2LabelWidth = getMaxLabelSize(slice.container, 'nv-y2');
           // use y axis width if it's wider than axis width/height
+          chartMargins.bottom = 30;
+          chartMargins.top = Math.floor(height/10) > 25 ? Math.floor(height/10) : 25;
           if (maxYAxis2LabelWidth > maxXAxisLabelHeight) {
             chartMargins.right = maxYAxis2LabelWidth + marginPad;
           }
-        }
+        } 
         // apply margins
         chart.margin(chartMargins);
       }
