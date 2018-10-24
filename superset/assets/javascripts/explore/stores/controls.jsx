@@ -279,6 +279,7 @@ export const controls = {
       ['sky_lava', '#AED6F1/#CD5C5C'],
       ['flame', '#F4D03F/#F39C12/#922B21'],
       ['red_gradient', '#FDEDEC/#FADBD8/#F5B7B1/#F1948A/#EC7063/#E74C3C/#CB4335'],
+      ['dark_red', '#f8ebeb/#cc6b6b/#9b3535/#501b1b/#350808'],
     ],
     default: 'blue_white_yellow',
     clearable: false,

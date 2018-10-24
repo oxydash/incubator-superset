@@ -150,6 +150,13 @@ export const spectrums = {
     '#E74C3C',
     '#CB4335',
   ],
+  dark_red: [
+    '#f8ebeb',
+    '#cc6b6b',
+    '#9b3535',
+    '#501b1b',
+    '#350808',
+  ],
 };
 
 
