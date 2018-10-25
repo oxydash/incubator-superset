@@ -284,7 +284,7 @@ function nvd3Vis(slice, payload) {
       case 'dual_line':
         chart = nv.models.multiChart()
         .legendRightAxisHint('')
-        .interpolate('monotone');
+        .interpolate('cardinal');
         break;
 
       case 'bar':
@@ -581,9 +581,31 @@ function nvd3Vis(slice, payload) {
       chart.lines1.padData(true);
       chart.lines2.padData(true);
 
-      setAxisShowMaxMin(chart.xAxis, false);
+      chart.xAxis.showMaxMin(true);
+      chart.yAxis1.showMaxMin(true);
+      chart.yAxis2.showMaxMin(true);
 
       data[0].type = "bar";
+
+
+      const SetYLineDomain = function (data) {
+        let yMax;
+        let yMin;
+        const MinScale = 0.05;
+        const MaxScale = 0.4;
+
+          yMax = d3.max(data.map(function(array) {
+            if (array.type == "line") {return d3.max(array.values, d => (d.y))};
+          }));
+          
+          yMin = d3.min(data.map(function(array) {
+            if (array.type == "line") {return d3.min(array.values, d => (d.y))};
+          }));
+
+          return [yMin - (yMax - yMin) * MinScale, yMax + (yMax - yMin) * MaxScale];
+      }
+
+      chart.yDomain2(SetYLineDomain(data));
 
       chart.bars1.dispatch.on('renderEnd', function(e){
         svg.selectAll('.nv-point')
