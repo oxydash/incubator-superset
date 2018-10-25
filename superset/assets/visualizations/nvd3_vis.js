@@ -592,7 +592,7 @@ function nvd3Vis(slice, payload) {
         let yMax;
         let yMin;
         const MinScale = 0.05;
-        const MaxScale = 0.4;
+        const MaxScale = 0.5;
 
           yMax = d3.max(data.map(function(array) {
             if (array.type == "line") {return d3.max(array.values, d => (d.y))};
