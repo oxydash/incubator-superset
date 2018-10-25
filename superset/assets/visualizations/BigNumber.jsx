@@ -166,7 +166,7 @@ function bigNumberVis(slice, payload) {
         <XYChart
           ariaLabel={`Big number visualization ${subheader}`}
           xScale={{ type: 'timeUtc' }}
-          yScale={{ type: 'linear' }}
+          yScale={{ type: 'linear' , includeZero: false }}
           width={availableWidth}
           height={totalHeight * CHART_SIZE_SCALAR}
           margin={CHART_MARGIN}
