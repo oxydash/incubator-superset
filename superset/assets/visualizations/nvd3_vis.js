@@ -49,6 +49,7 @@ const addTotalBarValues = function (svg, chart, data, stacked, axisFormat) {
   const countShowBar  = chart.state.disabled.filter(function(element) {
     return (!element);
   });
+  let dy;
 
   const totalStackedValues = stacked && data.length !== 0 ?
     data[0].values.map(function (bar, iBar) {
@@ -73,29 +74,32 @@ const addTotalBarValues = function (svg, chart, data, stacked, axisFormat) {
   rectsToBeLabeled.each(
     function (d, index) {
       const rectObj = d3.select(this);
-      if (rectObj.attr('class').includes('positive')) {
+        if (rectObj.attr('class').includes('positive')) {
+          dy = - 5;
+        } else {
+          dy = 14 + parseFloat(rectObj.attr('height'));
+        }
         const transformAttr = rectObj.attr('transform');
         const yPos = parseFloat(rectObj.attr('y'));
         const xPos = parseFloat(rectObj.attr('x'));
         const rectWidth = parseFloat(rectObj.attr('width'));
         const t = groupLabels.append('text')
           .attr('x', xPos) // rough position first, fine tune later
-          .attr('y', yPos - 5)
+          .attr('y', yPos + dy)
           .text(format(stacked ? totalStackedValues[index] : d.y))
           .attr('transform', transformAttr)
           .attr('class', 'bar-chart-label')
           .style("opacity", 0);
         const labelWidth = t.node().getBBox().width;
         t.transition().duration(300).style("opacity", 1).attr('x', xPos + rectWidth / 2 - labelWidth / 2); // fine tune
-      }
     });
 };
 
 
 const RemoveTotalBarValues = function (svg) {
-  let current = svg.select('g.nv-barsWrap').selectAll('text.bar-chart-label');
+  let current = svg.select('g.nv-barsWrap').selectAll('g text.bar-chart-label');
   if (!current.empty()) {
-    current.transition().duration(300).attr("y", 0).style("opacity", 0).remove();
+    current.node().parentNode.remove();
   }
 }
 
@@ -306,6 +310,22 @@ function nvd3Vis(slice, payload) {
 
         chart.controlLabels(translateControlBar);
 
+        const AutoScaleNegativeBar = function (stacked) {
+          if (fd.show_bar_value && (data.length == 1 || !stacked)) {
+            let yMin;
+  
+            yMin = d3.min(data.map(function(array) {
+              return d3.min(array.values, d => (d.y));
+            }));
+  
+            if (yMin<0) {
+              chart.forceY([yMin * 0.3 + yMin]);
+            }
+          }
+        }
+
+        AutoScaleNegativeBar(stacked);
+
         if (fd.show_bar_value) {
           setTimeout(function () {
             addTotalBarValues(svg, chart, data, stacked, fd.y_axis_format);
@@ -314,12 +334,15 @@ function nvd3Vis(slice, payload) {
 
         chart.dispatch.on('stateChange', function(e) {
           if (fd.show_bar_value) {
+            AutoScaleNegativeBar(e.stacked);
             RemoveTotalBarValues(svg);
             setTimeout(function () {
               addTotalBarValues(svg, chart, data, e.stacked, fd.y_axis_format);
             }, animationTime);
           }
         });
+
+        //chart.yDomain([yMin - (yMax - yMin) * 0.05, yMax + (yMax - yMin) * 0.05]);
 
         break;
 
