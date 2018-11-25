@@ -27,6 +27,7 @@ function calHeatmap(slice, payload) {
       itemSelector: slice.selector,
       tooltip: true,
       domain: data.domain,
+      domainLabelFormat: "%b",
       subDomain: data.subdomain,
       range: data.range,
       browsing: true,
