@@ -182,37 +182,37 @@ function bigNumberVis(slice, payload) {
             id="white_gradient"
             from="white"
             to="white"
-            toOpacity="0"
+            toOpacity={0}
           />
           <LinearGradient
             id="sky_gradient"
             from="#3498DB"
             to="#3498DB"
-            toOpacity="0"
+            toOpacity={0}
           />
           <LinearGradient
             id="green_gradient"
             from="#2ECC71"
             to="#2ECC71"
-            toOpacity="0"
+            toOpacity={0}
           />
           <LinearGradient
             id="red_gradient"
             from="#E74C3C"
             to="#E74C3C"
-            toOpacity="0"
+            toOpacity={0}
           />
           <LinearGradient
             id="yellow_gradient"
             from="#F1C40F"
             to="#F1C40F"
-            toOpacity="0"
+            toOpacity={0}
           />
           <LinearGradient
             id="purple_gradient"
             from="#9B59B6"
             to="#9B59B6"
-            toOpacity="0"
+            toOpacity={0}
           />
           <LinearGradient
             id="fire_gradient"
